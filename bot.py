@@ -1,10 +1,41 @@
 import markovify
 import time
+import json
+import re
 
 from slackbot import SlackClient
 
 BOT_TOKEN = "insert bot token here"
 GROUP_TOKEN = "insert slack group token here"
+MESSAGE_QUERY = "from:username_to_parrot"
+MESSAGE_PAGE_SIZE = 100
+DEBUG = True
+
+def load_database():
+    """
+        Reads 'database' from a JSON file on disk.
+        Returns a dictionary keyed by unique message permalinks.
+    """
+    try:
+        with open('message_database.json', 'r') as json_file:
+            messages = json.loads(json_file.read())
+    except IOError:
+        with open('message_db.json', 'w') as json_file:
+            json_file.write('{}')
+        messages = {}
+
+    return messages
+
+def store_database(obj):
+    """
+    Takes a dictionary keyed by unique message permalinks and writes it to the JSON 'database' on
+    disk.
+    """
+
+    with open('message_database.json', 'w') as json_file:
+        json_file.write(json.dumps(obj))
+
+    return True
 
 def main():
     """
