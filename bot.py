@@ -28,8 +28,8 @@ def load_database():
 
 def store_database(obj):
     """
-    Takes a dictionary keyed by unique message permalinks and writes it to the JSON 'database' on
-    disk.
+        Takes a dictionary keyed by unique message permalinks and
+        writes it to the JSON 'database' on disk.
     """
 
     with open('message_database.json', 'w') as json_file:
@@ -37,9 +37,46 @@ def store_database(obj):
 
     return True
 
+def request_messages(client, page=1):
+    """
+        Convenience method for querying messages from Slack API.
+    """
+    if DEBUG:
+        print "requesting page {}".format(page)
+
+    return client.api_call('search.messages', query=MESSAGE_QUERY,
+                            count=MESSAGE_PAGE_SIZE, page=page)
+
+
+def build_text_model():
+    """
+        Read the latest 'database' off disk and build a new markov
+        chain generator model.
+        Returns TextModel.
+    """
+    if DEBUG:
+        print "Building new model..."
+
+    messages = load_database()
+    return markovify.Text(" ".join(messages.values()), state_size=2)
+
+def format_message(original):
+    """
+        Do any formatting necessary to markon chains
+        before relaying to Slack.
+    """
+    if original is None:
+        return
+
+    # remove <> from urls
+    cleaned_message = re.sub(r'<(htt.*)>', '\1', original)
+    return cleaned_message
+
+
 def main():
     """
-        Startup logic and the main application loop to monitor Slack events.
+        Startup logic and the main application loop
+        to monitor Slack events.
     """
     # Create the slackclient instance
     slack_client = SlackClient(BOT_TOKEN)
