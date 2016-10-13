@@ -18,7 +18,7 @@ def main():
 
     while True:
         # check for events
-        for slack_event in sc.rtm_read():
+        for slack_event in slack_client.rtm_read():
             # we need only events that are messages
             if not slack_event.get('type') == "message":
                 continue
@@ -31,7 +31,7 @@ def main():
                 continue
 
             if "ping" in message.lower():
-                sc.rtm_send_message(channel, "pong")
+                slack_client.rtm_send_message(channel, "pong")
 
         # Sleep for 0.5 seconds
         time.sleep(0.5)
